@@ -5,19 +5,24 @@ import os
 import select
 import signal
 import sys
-if __name__ != '__main__':
-    raise Warning('This file is not meant to be imported')
+
+if __name__ != "__main__":
+    raise Warning("This file is not meant to be imported")
 
 p = argparse.ArgumentParser()
-p.add_argument("-s", "--socket", help="socket path for arun to join this process", required=True)
-p.add_argument('command', nargs=argparse.REMAINDER)
+p.add_argument(
+    "-s", "--socket", help="socket path for arun to join this process", required=True
+)
+p.add_argument("command", nargs=argparse.REMAINDER)
 args = p.parse_args()
+
 
 def on_child_death(signum, frame):
     global c_pid
     _, status = os.waitpid(-1, 0)
     c_pid = None
     raise SystemExit(os.waitstatus_to_exitcode(status))
+
 
 signal.signal(signal.SIGCHLD, on_child_death)
 
@@ -29,6 +34,7 @@ def run_in_forkpty(cmd):
     else:
         os.set_blocking(fd, False)
         return pid, fd
+
 
 def handle_client(s):
     s.setblocking(False)
@@ -46,6 +52,7 @@ def handle_client(s):
                 sys.stdout.buffer.write(data)
                 sys.stdout.flush()
                 s.sendall(data)
+
 
 with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s_top:
     s_top.bind(args.socket)
